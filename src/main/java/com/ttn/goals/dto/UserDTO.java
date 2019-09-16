@@ -23,6 +23,10 @@ public class UserDTO {
 
     String email;
 
+    String mobileNumber;
+
+    Long id;
+
 
 
 
