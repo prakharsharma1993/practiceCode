@@ -6,10 +6,13 @@ package com.ttn.goals.configuration;
 import com.ttn.goals.dao.UserRepositoryService;
 import com.ttn.goals.model.User;
 import com.ttn.goals.service.CustomUserServiceDetail;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public static String getJwtFromRequest(HttpServletRequest request) {
 
-        String bearerToken = request.getHeader(AUTHORIZATION);
+        String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);
         }
@@ -56,50 +60,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     @Transactional(propagation = REQUIRES_NEW)
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws
             ServletException, IOException {
-        try {
-            log.info("Url::" + request.getRequestURL().toString());
-            String jwtToken = getJwtFromRequest(request);
-            Date expiryDate=tokenProvider.getDateFromJwt(jwtToken);
-            Authentication newAuthentication=SecurityContextHolder.getContext().getAuthentication();
-            long currentTime=System.currentTimeMillis();
-          /*  if((currentTime-expiryDate.getTime())>55 && (currentTime-expiryDate.getTime())<60)
-            {*/
-            response.setHeader("token",tokenProvider.generateToken(newAuthentication,request));
-//            }
-//            log.info(messageByLocaleService.getMessage("request.payload") + request);
-            if (StringUtils.hasText(jwtToken) && tokenProvider.validateToken(jwtToken)) {
-                log.info("first if block called");
-                String userId = tokenProvider.getUserIdFromJWT(jwtToken);
-                String password=tokenProvider.getPasswordFromJWT(jwtToken);
-//                log.info("userId fetched");
-                if (userId != null) {
-                    Optional<User> optionalUser = userRepositoryService.findByUserIdAndActive(userId,true);
-                    if (optionalUser.isPresent()) {
-                        User user = optionalUser.get();
-                        if (user.isActive() && userId.equals(user.getUserId()) && password.equals(user.getPassword())) {
-                            UserDetails userDetails = customUserServiceDetail.loadUserByUsername(userId);
-                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                            log.info("Token Obtained+++++++++++++++++++++++++++");
-                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            response.setHeader("token",tokenProvider.generateToken(authentication,request));
-                        }
-                    } else {
-                        throw new UsernameNotFoundException("jwt.token.does.not.exist");
-                    }
-                } else {
-                    throw new UsernameNotFoundException("user.not.logged.in");
-                }
+        String header = req.getHeader("Authorization");
+        String username = null;
+        String authToken = null;
+        if (header != null && header.startsWith("Bearer")) {
+            authToken = header.replace("Bearer", "");
+            try {
+                username = tokenProvider.getUsernameFromToken(authToken);
+            } catch (IllegalArgumentException e) {
+                logger.error("an error occured during getting username from token", e);
+            } catch (ExpiredJwtException e) {
+                logger.warn("the token is expired and not valid anymore", e);
+            } catch (SignatureException e) {
+                logger.error("Authentication Failed. Username or Password not valid.");
             }
-        } catch (Exception ex) {
-            log.error(("could.not.set.user.authentication"), ex);
+        } else {
+            logger.warn("couldn't find bearer string, will ignore the header");
+        }
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails = customUserServiceDetail.loadUserByUsername(username);
+
+            if (tokenProvider.validateToken(authToken, userDetails)) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                logger.info("authenticated user " + username + ", setting security context");
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
 
-        filterChain.doFilter(request, response);
+        chain.doFilter(req, res);
     }
 }
 

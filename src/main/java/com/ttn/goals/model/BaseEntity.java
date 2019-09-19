@@ -34,7 +34,7 @@ public  abstract class BaseEntity implements Serializable {
     @Column(nullable = false)
     Date modifiedDate;
 
-    boolean active;
+    boolean active =true;
 
 
     @PrePersist

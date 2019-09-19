@@ -84,7 +84,7 @@ public class UserService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = jwtTokenProvider.generateToken(authentication,httpServletRequest);
+        String token = jwtTokenProvider.generateToken(userRepositoryService.findByUserIdAndActive(loginRequestCO.getUserID(),true).get());
 
         Date expirationTime = jwtTokenProvider.getDateFromJwt(token);
         Optional<User> userDao = userRepositoryService.findByUserIdAndActive(loginRequestCO.getUserID(),true);
