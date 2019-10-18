@@ -5,6 +5,8 @@ import com.ttn.goals.co.LoginRequestCO;
 import com.ttn.goals.co.UserCO;
 import com.ttn.goals.dto.ResponseDTO;
 import com.ttn.goals.dto.UserDTO;
+import com.ttn.goals.service.Consumer;
+import com.ttn.goals.service.Producer;
 import com.ttn.goals.service.UserService;
 import com.ttn.goals.validator.UserValidator;
 import io.swagger.annotations.Api;
@@ -26,14 +28,23 @@ public class UserController extends BaseController{
     @Autowired
     UserService userService;
 
+    @Autowired
+    Producer producer;
+
+    @Autowired
+    Consumer consumer;
+
     @RequestMapping(value = "/signUp", method = RequestMethod.POST)
     ResponseDTO createUser(@Valid @RequestBody UserCO userCO,BindingResult bindingResult) throws Exception{
 
 
         validateRequest(userValidator,bindingResult,userCO);
-        Long userId = userService.createUser(userCO);
 
-        return new ResponseDTO(true,"User Created Successfully",userId);
+        producer.run(userCO);
+
+       // Long userId = userService.createUser(userCO);
+
+        return new ResponseDTO(true,"User Created Successfully",null);
 
     }
 

@@ -57,15 +57,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-
-  /*  @Override
-    @Transactional
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder
-                .userDetailsService(customUserServiceDetail)
-                .passwordEncoder(passwordEncoder());
-    }*/
-
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
