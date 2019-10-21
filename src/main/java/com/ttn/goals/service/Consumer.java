@@ -18,7 +18,13 @@ public class Consumer  {
 
     @RabbitHandler
     public void receiveMessage(UserCO userCO) throws Exception{
-        userService.createUser(userCO);
+       try{
+
+           userService.createUser(userCO);
+
+       }catch (Exception e){
+           log.error("Exception Arises while consuming the resource ::"+ e);
+       }
 
     }
 

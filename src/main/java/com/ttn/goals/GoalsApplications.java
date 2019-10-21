@@ -1,6 +1,7 @@
 package com.ttn.goals ;
 
 
+import com.ttn.goals.service.JavaStreamExample;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -16,6 +17,10 @@ public class GoalsApplications {
 
 
     public static void main(String[] args) {
+
+        JavaStreamExample javaStreamExample = new JavaStreamExample();
+        javaStreamExample.streamPractice();
+
         SpringApplication.run(GoalsApplications.class, args);
     }
 
