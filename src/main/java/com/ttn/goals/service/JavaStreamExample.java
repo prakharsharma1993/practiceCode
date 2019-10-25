@@ -50,13 +50,15 @@ public class JavaStreamExample {
         list2.stream().sorted(Comparator.reverseOrder()).forEach(System.out::println);
 
         list2.stream().filter(s -> s.startsWith("A")).map(String::toUpperCase).forEach(System.out::println);
-        System.out.println(stringList.stream().filter(s -> s.startsWith("A")).map(String::toUpperCase).reduce((s, s2) ->s +" "+s2 ).get());
+        System.out.println(list2.stream().filter(s -> s.startsWith("A")).map(String::toUpperCase).reduce((s, s2) ->s +" "+s2 ).get());
         System.out.println("Count :: "+stringList.stream().filter(s -> s.startsWith("A")).count());
 
         List<String> sList = new ArrayList<String>();
 
         sList.add("abc");
         sList.add("def");
+        sList.add("xysf");
+
 
         Stream<String> stream = sList.stream();
 
