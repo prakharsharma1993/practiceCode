@@ -2,10 +2,7 @@ package com.ttn.goals.service;
 
 import ch.qos.logback.core.net.SyslogOutputStream;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,7 +26,7 @@ public class JavaStreamExample {
             list.add(i);
         }
 
-        List<String> stringList = new ArrayList<String>(Arrays.asList("Prakhar", "Sharma", "Increment", "2019"));
+        List<String> stringList = new ArrayList<String>(Arrays.asList("Prakhar", "Sharma", "TTN", "Noida"));
 
 
         System.out.println(stringList.stream().anyMatch(s -> s.startsWith("p")));
@@ -38,14 +35,14 @@ public class JavaStreamExample {
 
 
         List<String> list2 = new ArrayList<>();
-        list2.add("Amitabh");
-        list2.add("Shekhar");
+        list2.add("Amit");
+        list2.add("Shan");
         list2.add("Aman");
         list2.add("Rahul");
-        list2.add("Shahrukh");
-        list2.add("Salman");
-        list2.add("Yana");
-        list2.add("Lokesh");
+        list2.add("Sonu");
+        list2.add("Sonam");
+        list2.add("Zoya");
+        list2.add("Raj");
 
         list2.stream().filter(s -> s.startsWith("S")).forEach(System.out::println);
         list2.stream().sorted().forEach(System.out::println);
@@ -56,11 +53,22 @@ public class JavaStreamExample {
         System.out.println(stringList.stream().filter(s -> s.startsWith("A")).map(String::toUpperCase).reduce((s, s2) ->s +" "+s2 ).get());
         System.out.println("Count :: "+stringList.stream().filter(s -> s.startsWith("A")).count());
 
+        List<String> sList = new ArrayList<String>();
+
+        sList.add("abc");
+        sList.add("def");
+
+        Stream<String> stream = sList.stream();
+
+        Optional<String> max = stream.max((val1, val2) -> {
+            return val1.compareTo(val2);
+        });
+        String maxString = max.get();
+        System.out.println(maxString);
 
 
-   /* Stream<Integer> stream1 = list.stream();
-    stream1.forEach(p -> System.out.print(p));
-    System.out.println();*/
+
+
 
 
     }
